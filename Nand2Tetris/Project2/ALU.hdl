@@ -40,15 +40,29 @@ CHIP ALU {
         ng;      // (out < 0,  1, 0)
 
     PARTS:
-    Mux16(a=x, b=false, sel=zx, out=zxx);
-    Not16(in=zxx, out=Notzxx);
-    Mux16(a=zxx, b=Notzxx, sel=nx, out=nxzxx);
-    Mux16(a=y, b=false, sel=zy, out=zyy);
-    Not16(in=zyy, out=Notzyy);
-    Mux16(a=zyy, b=Notzyy, sel=ny, out=nyzyy);
-    And16(a=nxzxx, b=nyzyy, out=nxzxxAndnxzyy);
-    Add16(a=nxzxx, b=nyzyy, out=nzxzzAddnxzyy);
-    Mux16(a=nxzxxAndnxzyy, b=nzxzzAddnxzyy, sel=f, out=fout);
-    Not16(in=fout, out=Notfout);
-    Mux16(a=fout, b=Notfout, sel=no, out=out);
+        // zx nx
+        Mux16(a=x, b=false, sel=zx, out=zxx);
+        Not16(in=zxx, out=Notzxx);
+        Mux16(a=zxx, b=Notzxx, sel=nx, out=nxzxx);
+        // zy ny
+        Mux16(a=y, b=false, sel=zy, out=zyy);
+        Not16(in=zyy, out=Notzyy);
+        Mux16(a=zyy, b=Notzyy, sel=ny, out=nyzyy);
+        // f
+        And16(a=nxzxx, b=nyzyy, out=nxzxxAndnxzyy);
+        Add16(a=nxzxx, b=nyzyy, out=nzxzzAddnxzyy);
+        Mux16(a=nxzxxAndnxzyy, b=nzxzzAddnxzyy, sel=f, out=fout);
+        // n
+        Not16(in=fout, out=Notfout);
+
+        // ng
+        Mux16(a=fout, b=Notfout, sel=no, out=f1);
+        And16(a=f1, b=true, out[15]=ng);
+        // zr
+        Not16(in=f1, out=Notout);
+        Inc16(in=Notout, out=IncNotout);
+        Or16(a=f1, b=IncNotout, out[15]=orf1);
+        Not(in=orf1, out=zr);
+
+        Mux16(a=fout, b=Notfout, sel=no, out=out);
 }
